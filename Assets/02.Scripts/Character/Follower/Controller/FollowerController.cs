@@ -28,24 +28,26 @@ public class FollowerController : HeroController
         RemoveEvents();
     }
 
+    // 이벤트 리스너 등록
     private void AddEvents()
     {
         EventManager<UIEvents>.StartListening(UIEvents.OnClickAutoButton, ToggleAutoMode);
+        EventManager<UIEvents>.StartListening(UIEvents.OnTouchStartJoystick, OnUserControl);
+        EventManager<UIEvents>.StartListening(UIEvents.OnTouchEndJoystick, OffUserControl);
         EventManager<HeroEvents>.StartListening(HeroEvents.LeaderAttackStarted, OnLeaderAttackStarted);
         EventManager<HeroEvents>.StartListening(HeroEvents.LeaderAttackStopped, OnLeaderAttackStopped);
         EventManager<HeroEvents>.StartListening<float>(HeroEvents.LeaderDirectionChanged, OnLeaderDirectionChanged);
-        EventManager<UIEvents>.StartListening(UIEvents.OnTouchStartJoystick, OnUserControl);
-        EventManager<UIEvents>.StartListening(UIEvents.OnTouchEndJoystick, OffUserControl);
     }
 
+    // 이벤트 리스너 제거
     private void RemoveEvents()
     {
         EventManager<UIEvents>.StopListening(UIEvents.OnClickAutoButton, ToggleAutoMode);
+        EventManager<UIEvents>.StopListening(UIEvents.OnTouchStartJoystick, OnUserControl);
+        EventManager<UIEvents>.StopListening(UIEvents.OnTouchEndJoystick, OffUserControl);
         EventManager<HeroEvents>.StopListening(HeroEvents.LeaderAttackStarted, OnLeaderAttackStarted);
         EventManager<HeroEvents>.StopListening(HeroEvents.LeaderAttackStopped, OnLeaderAttackStopped);
         EventManager<HeroEvents>.StopListening<float>(HeroEvents.LeaderDirectionChanged, OnLeaderDirectionChanged);
-        EventManager<UIEvents>.StopListening(UIEvents.OnTouchStartJoystick, OnUserControl);
-        EventManager<UIEvents>.StopListening(UIEvents.OnTouchEndJoystick, OffUserControl);
     }
 
     public void InitializeFollower()

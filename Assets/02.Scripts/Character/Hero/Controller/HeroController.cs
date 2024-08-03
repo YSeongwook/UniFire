@@ -73,7 +73,7 @@ public class HeroController : MonoBehaviour
         RemoveEvents();
     }
 
-    // 이벤트 구독
+    // 이벤트 리스너 등록
     private void AddEvents()
     {
         EventManager<UIEvents>.StartListening(UIEvents.OnClickAutoButton, ToggleAutoMode);
@@ -81,7 +81,7 @@ public class HeroController : MonoBehaviour
         EventManager<UIEvents>.StartListening(UIEvents.OnTouchEndJoystick, OffUserControl);
     }
 
-    // 이벤트 구독 취소
+    // 이벤트 리스너 제거
     private void RemoveEvents()
     {
         EventManager<UIEvents>.StopListening(UIEvents.OnClickAutoButton, ToggleAutoMode);
@@ -89,30 +89,38 @@ public class HeroController : MonoBehaviour
         EventManager<UIEvents>.StopListening(UIEvents.OnTouchEndJoystick, OffUserControl);
     }
 
-    // 컴포넌트 초기화
+    // 컴포넌트 및 변수 초기화
     protected void Initialize()
     {
+        // 컴포넌트 초기화
         HeroStatsManager = GetComponent<HeroStatsManager>();
         HeroStatsManager.Initialize();
-        MoveInput = Vector2.zero;
+
         Rb = GetComponent<Rigidbody>();
         SpriteRenderer = GetComponentInChildren<SpriteRenderer>();
         Animator = GetComponentInChildren<Animator>();
         MainCamera = Camera.main;
-        InitialY = transform.position.y;
         BoxCollider = GetComponent<BoxCollider>();
+
+        // 변수 초기화
+        MoveInput = Vector2.zero;
+        InitialY = transform.position.y;
         BoxColliderCenter = BoxCollider.center;
         IsAutoMode = false;
         IsUserControlled = false;
-        IsColliding = false; // 초기화
+        IsColliding = false;
+
+        // HUD 초기화
         if (hud == null)
         {
-            hud = GetComponentInChildren<Transform>();
+            hud = transform.GetChild(0);
         }
-
         HudPosition = hud.localPosition;
+
+        // 레이어 초기화
         EnemyLayer = LayerMask.GetMask("Enemy");
 
+        // HeroStats 초기화
         if (HeroStatsManager != null)
         {
             heroStats = HeroStatsManager.GetHeroStats();
@@ -215,7 +223,7 @@ public class HeroController : MonoBehaviour
         {
             float moveHorizontal = CurrentTarget.position.x - transform.position.x;
             HandleSpriteFlip(moveHorizontal);
-            EventManager<HeroEvents>.TriggerEvent<float>(HeroEvents.LeaderDirectionChanged, moveHorizontal);
+            EventManager<HeroEvents>.TriggerEvent(HeroEvents.LeaderDirectionChanged, moveHorizontal);
         }
     }
 

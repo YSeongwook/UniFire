@@ -10,7 +10,7 @@ using UnityEngine.Networking;
 
 public class GachaManager : MonoBehaviour
 {
-    private const string _gachaUrl = "https://asia-northeast1-unifire-ebcc1.cloudfunctions.net/gacha"; // 가챠 API의 URL
+    private const string GachaUrl = "https://asia-northeast1-unifire-ebcc1.cloudfunctions.net/gacha"; // 가챠 API의 URL
     public SummonResultManager summonResultManager; // SummonResultManager 컴포넌트 참조
     private Dictionary<int, HeroData> _heroDataDict;
     private static GachaManager _instance;
@@ -94,7 +94,7 @@ public class GachaManager : MonoBehaviour
     private async Task<int[]> GachaRequestAsync(string userId, int drawCount)
     {
         var json = JsonConvert.SerializeObject(new { userId = userId, drawCount = drawCount }); // 요청 데이터를 JSON으로 직렬화
-        using (var request = new UnityWebRequest(_gachaUrl, "POST")) // POST 요청 생성 및 using 구문 사용
+        using (var request = new UnityWebRequest(GachaUrl, "POST")) // POST 요청 생성 및 using 구문 사용
         {
             byte[] bodyRaw = Encoding.UTF8.GetBytes(json); // 요청 바디 설정
             request.uploadHandler = new UploadHandlerRaw(bodyRaw); // 업로드 핸들러 설정

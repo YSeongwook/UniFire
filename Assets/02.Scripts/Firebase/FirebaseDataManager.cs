@@ -9,15 +9,15 @@ using UnityEngine.Events;
 public class FirebaseDataManager : Singleton<FirebaseDataManager>
 {
     private DatabaseManager databaseManager;
-    private LocalFileManager localFileManager;
-    private Logger logger;
+    private LocalFileManager _localFileManager;
+    private Logger _logger;
 
     protected override void Awake()
     {
         base.Awake();
 
         databaseManager = DatabaseManager.Instance;
-        localFileManager = LocalFileManager.Instance;
+        _localFileManager = LocalFileManager.Instance;
 
         EventManager<FirebaseEvents>.StartListening(FirebaseEvents.FirebaseInitialized, OnFirebaseInitialized);
         EventManager<FirebaseEvents>.StartListening(FirebaseEvents.FirebaseSignIn, OnFirebaseSignIn);
@@ -26,7 +26,7 @@ public class FirebaseDataManager : Singleton<FirebaseDataManager>
         UnityAction<HeroCollection> onHeroCollectionUpdated = OnHeroCollectionUpdated;
         EventManager<DataEvents>.StartListening(DataEvents.HeroCollectionUpdated, onHeroCollectionUpdated);
 
-        logger = Logger.Instance;
+        _logger = Logger.Instance;
     }
 
     private void OnDestroy()
@@ -41,12 +41,12 @@ public class FirebaseDataManager : Singleton<FirebaseDataManager>
 
     private void OnFirebaseInitialized()
     {
-        logger = Logger.Instance; // Logger 인스턴스 초기화
+        _logger = Logger.Instance; // Logger 인스턴스 초기화
         
         UnityMainThreadDispatcher.Enqueue(() =>
         {
-            logger.Log($"Realtime Database: {databaseManager}");
-            logger.Log($"Auth: {AuthManager.Instance}");
+            _logger.Log($"Realtime Database: {databaseManager}");
+            _logger.Log($"Auth: {AuthManager.Instance}");
         });
         
         EventManager<FirebaseEvents>.TriggerEvent(FirebaseEvents.FirebaseDatabaseInitialized);
@@ -81,7 +81,7 @@ public class FirebaseDataManager : Singleton<FirebaseDataManager>
         }
         else
         {
-            UnityMainThreadDispatcher.Enqueue(() => logger.Log("기존 사용자 데이터가 존재합니다."));
+            UnityMainThreadDispatcher.Enqueue(() => _logger.Log("기존 사용자 데이터가 존재합니다."));
         }
     }
 
@@ -91,6 +91,6 @@ public class FirebaseDataManager : Singleton<FirebaseDataManager>
         string base64HeroCollection = Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonUtility.ToJson(heroCollection)));
 
         databaseManager.SaveHeroCollection(new UserHeroCollection(userId, base64HeroCollection));
-        localFileManager.SaveHeroCollectionToLocalFile(base64HeroCollection);
+        _localFileManager.SaveHeroCollectionToLocalFile(base64HeroCollection);
     }
 }

@@ -16,15 +16,13 @@ namespace Chat
         public TMP_InputField chatInputField;
         public Button sendButton;
 
-        private Logger logger;
+        private Logger _logger;
         private ScrollRect _scrollRect;
         private FirebaseUser _currentUser; // 현재 로그인한 사용자
         private TcpClientManager _tcpClientManager;
 
-        [SerializeField]
-        private string serverIp = "127.0.0.1"; // 기본값을 로컬호스트로 설정
-        [SerializeField]
-        private int port = 8080;
+        [SerializeField] private string serverIp = "127.0.0.1"; // 기본값을 로컬호스트로 설정
+        [SerializeField] private int port = 8080;
 
         private void Awake()
         {
@@ -35,7 +33,7 @@ namespace Chat
         {
             _scrollRect = chatScroll.GetComponent<ScrollRect>();
             sendButton.onClick.AddListener(OnSendButtonClicked);
-            logger = Logger.Instance;
+            _logger = Logger.Instance;
 
             _tcpClientManager = new TcpClientManager(serverIp, port);
             _tcpClientManager.OnMessageReceived += HandleMessageReceived;
@@ -47,7 +45,7 @@ namespace Chat
         private void OnDisable()
         {
             _tcpClientManager?.Disconnect();
-            Debug.Log("Chat UI 비활성화됨 - 서버 연결 해제");
+            DebugLogger.Log("Chat UI 비활성화됨 - 서버 연결 해제");
         }
 
         private void OnDestroy()
@@ -63,21 +61,24 @@ namespace Chat
 
         private void OnSendButtonClicked()
         {
-            logger.Log("버튼 클릭함");
+            // 버튼 클릭 시 호출
+            _logger.Log("버튼 클릭함");
             string message = chatInputField.text;
             if (!string.IsNullOrEmpty(message))
             {
+                // ChatMessageData 객체 생성 및 초기화
                 var chatMessage = new ChatMessageData
                 {
                     userName = _currentUser?.DisplayName,
                     message = message,
                     Timestamp = DateTime.Now,
-                    userAvatar = null // 필요에 따라 아바타 설정
+                    userAvatar = LoadUserAvatar(_currentUser?.DisplayName) // 리소스 폴더에서 아바타 로드
                 };
 
+                // 메시지를 JSON 형식으로 직렬화 (userAvatar 제외)
                 string jsonMessage = JsonConvert.SerializeObject(chatMessage);
                 _tcpClientManager.SendMessageToServer(jsonMessage);
-                logger.Log("보낸 메시지: " + jsonMessage);
+                _logger.Log("보낸 메시지: " + jsonMessage);
                 chatInputField.text = string.Empty;
                 UpdateChatDisplay(chatMessage);
                 ScrollToBottom();
@@ -87,7 +88,7 @@ namespace Chat
         private void HandleMessageReceived(string jsonMessage)
         {
             var chatMessage = JsonConvert.DeserializeObject<ChatMessageData>(jsonMessage);
-            logger.Log("받은 메시지: " + jsonMessage);
+            _logger.Log("받은 메시지: " + jsonMessage);
             UnityMainThreadDispatcher.Enqueue(() => UpdateChatDisplay(chatMessage));
         }
 
@@ -100,6 +101,16 @@ namespace Chat
         {
             Canvas.ForceUpdateCanvases();
             _scrollRect.verticalNormalizedPosition = 0f; // 0이면 가장 아래로 스크롤
+        }
+        
+        // 사용자 아바타를 리소스 폴더에서 로드하는 메서드
+        private Sprite LoadUserAvatar(string userName)
+        {
+            if (string.IsNullOrEmpty(userName))
+                return null;
+
+            // Resource 폴더의 UserPortraits 폴더에서 아바타 스프라이트 로드
+            return Resources.Load<Sprite>($"UserPortraits/{userName}");
         }
     }
 }
